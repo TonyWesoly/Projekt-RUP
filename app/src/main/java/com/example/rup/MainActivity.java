@@ -25,27 +25,33 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         rupNotifications = new NotifyMe.Builder(getApplicationContext());
+        setNotificationsContent("aaa","bbb");
+        setRupNotificationsTime(21,19);
+        notificationsBuild();
     }
 
     public void setRupNotificationsTime(int hours, int minutes){
         Calendar date = Calendar.getInstance();
-        int day = date.get(Calendar.DAY_OF_MONTH);
-        int month = date.get(Calendar.MONTH);
-        int year = date.get(Calendar.YEAR);
-
-        date.set(Calendar.YEAR,year);
-        date.set(Calendar.MONTH, month);
-        date.set(Calendar.DAY_OF_MONTH, day);
+//        int day = date.get(Calendar.DAY_OF_MONTH);
+//        int month = date.get(Calendar.MONTH);
+//        int year = date.get(Calendar.YEAR);
+//
+//        date.set(Calendar.YEAR,year);
+//        date.set(Calendar.MONTH, month);
+//        date.set(Calendar.DAY_OF_MONTH, day);
         date.set(Calendar.HOUR_OF_DAY,hours);
         date.set(Calendar.MINUTE, minutes);
+        date.set(Calendar.SECOND,0);
         rupNotifications.time(date);
         rupNotifications.rrule("FREQ=DAILY;INTERVAL=1");
     }
+
     public void setNotificationsContent(String notificationTitle, String notificationText){
         rupNotifications.title(notificationTitle);
         rupNotifications.content(notificationText);
         rupNotifications.small_icon(R.drawable.ic_cloud_rup);
     }
+
     public void notificationsBuild(){
         rupNotifications.build();
     }
