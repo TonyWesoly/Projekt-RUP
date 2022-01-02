@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText adresM;
     private EditText adresP;
     private EditText godzina;
+    private EditText editData;
     private TextView txtShow;
     private Button button;
     private Button button2;
@@ -254,6 +255,7 @@ public class MainActivity extends AppCompatActivity {
         adresM = (EditText) findViewById(R.id.adresM);
         adresP = (EditText) findViewById(R.id.adresP);
         godzina = (EditText) findViewById(R.id.godzina);
+        editData = (EditText) findViewById(R.id.data);
         txtShow = (TextView) findViewById(R.id.textTest);
         button = (Button) findViewById(R.id.button);
         button2 = (Button) findViewById(R.id.button2);
@@ -264,7 +266,7 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String myTxt = adresM.getText().toString() + "\n" + adresP.getText().toString() + "\n" + godzina.getText().toString() + "\n";
+                String myTxt = adresM.getText().toString() + "\n" + adresP.getText().toString() + "\n" + editData.getText().toString() + "\n" + godzina.getText().toString() + "\n";
                 try {
 
 //                    FileOutputStream fileOut = openFileOutput("test.json",MODE_PRIVATE);
