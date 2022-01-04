@@ -1,42 +1,31 @@
 package com.example.wearapp;
 
 import ClothingService.ClothingService;
-
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.AsyncTask;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import androidx.appcompat.app.AppCompatActivity;
+import com.example.Notifications.AlarmReceiver;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import com.example.Notifications.AlarmReceiver;
-
 public class MainActivity extends AppCompatActivity {
 
-
+    // widgets
     private EditText adresM;
     private EditText adresP;
     private EditText godzina;
@@ -49,8 +38,13 @@ public class MainActivity extends AppCompatActivity {
     private String homeAddress;
     private String workAddress;
     private String hourOfWorkingStart;
+    private String dataOfWorkingStart;
+    private String patternDate;
+
     private SimpleDateFormat datetimeFormat;
     private Date timeOfWorkingStart;
+    private SimpleDateFormat timeFormat;
+    private String timeOfAwaking;
     long epoch;
     String epochS;
     private List<String> data = new ArrayList<>();
@@ -138,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
             clothes.addAccessories(weather);
             cloth = clothes.getClothes();
             time = clothes.getTime();
-            txtShow.setText(cloth + time);
+//            txtShow.setText(cloth + time);
         }
     }
 
@@ -266,7 +260,6 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String myTxt = adresM.getText().toString() + "\n" + adresP.getText().toString() + "\n" + editData.getText().toString() + "\n" + godzina.getText().toString() + "\n";
                 try {
 
 //                    FileOutputStream fileOut = openFileOutput("test.json",MODE_PRIVATE);
@@ -276,32 +269,37 @@ public class MainActivity extends AppCompatActivity {
 //                    adresP.setText("");
 //                    godzina.setText("");
 
-
+                    // Information from widgets
                     homeAddress = adresM.getText().toString();
                     workAddress = adresP.getText().toString();
                     hourOfWorkingStart = godzina.getText().toString();
+                    dataOfWorkingStart = editData.getText().toString();
+
+                    // Parsing date for TraceData
+                    patternDate = dataOfWorkingStart + " " + hourOfWorkingStart + ":00";
                     datetimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    timeOfWorkingStart = datetimeFormat.parse(hourOfWorkingStart);
-                    epoch = timeOfWorkingStart.getTime() / 1000;
+                    timeOfWorkingStart = datetimeFormat.parse(patternDate);
+                    epoch = (timeOfWorkingStart.getTime() / 1000);
                     epochS = Long.toString(epoch);
                     new TraceData().start();
-;
-                    
 
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.add(Calendar.DAY_OF_YEAR, 1);
-                    Date tomorrow = calendar.getTime();
-                    String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(tomorrow);
+                    // Options for WeatherAPI
                     String city = "Poznan";
-                    //String hour = "0";
                     String key = "992e7cab06164165980213921210812";
                     String url = "https://api.weatherapi.com/v1/history.json?key=" + key +
-                            "&q=" + city + "&dt=" + date;
+                            "&q=" + city + "&dt=" + dataOfWorkingStart;
                     new WeatherAPI().execute(url);
 
+                    // Parsing time for create notification
+                    timeFormat = new SimpleDateFormat("HH:mm");
+                    long millis = Long.parseLong(String.valueOf(Integer.valueOf(data.get(0))-(time*60+20*60)));
+                    timeOfAwaking = timeFormat.format(new Date(millis * 1000));
+                    String hourWake = timeOfAwaking.substring(0, 2);
+                    String minuteWake = timeOfAwaking.substring(3, 5);
                     createNotification("Wake Up","Tramwaj numer: " + data.get(2) + "/Godzina odjazdu:" + data.get(1)
-                            + "/Ubranie:" + cloth + "/Czas na ubieranie się:" + time, 02, 06 );
-                    Toast.makeText(MainActivity.this, data.get(1), Toast.LENGTH_LONG).show();
+                            + "/Ubranie:" + cloth, Integer.valueOf(hourWake), Integer.valueOf(minuteWake));
+
+                    Toast.makeText(MainActivity.this, "Powiadomienie nadejdzie o " + timeOfAwaking, Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -311,23 +309,21 @@ public class MainActivity extends AppCompatActivity {
         button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
-                    FileInputStream fileIn = openFileInput("test.json");
-                    InputStreamReader reader = new InputStreamReader(fileIn);
-                    BufferedReader bufferread = new BufferedReader(reader);
-                    StringBuffer strbuff = new StringBuffer();
-                    String str;
-                    while ((str = bufferread.readLine()) != null) {
-                        strbuff.append(str + "\n");
-                    }
-                    //OPTIONS
-                    //TOMORROW_DATE
-                    //txtShow.setText(strbuff.toString());
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    FileInputStream fileIn = openFileInput("test.json");
+//                    InputStreamReader reader = new InputStreamReader(fileIn);
+//                    BufferedReader bufferread = new BufferedReader(reader);
+//                    StringBuffer strbuff = new StringBuffer();
+//                    String str;
+//                    while ((str = bufferread.readLine()) != null) {
+//                        strbuff.append(str + "\n");
+//                    }
+                    Toast.makeText(MainActivity.this, "Powiadomienie nadejdzie o " + timeOfAwaking, Toast.LENGTH_LONG).show();
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
             }
         });
     }
