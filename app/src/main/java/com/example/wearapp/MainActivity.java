@@ -9,7 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
+//import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.Notifications.AlarmReceiver;
@@ -18,7 +18,7 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
+//import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -30,9 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText adresP;
     private EditText godzina;
     private EditText editData;
-    private TextView txtShow;
-    private Button button;
-    private Button button2;
+//    private TextView txtShow;
 
     // for trace api
     private String homeAddress;
@@ -47,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private String timeOfAwaking;
     long epoch;
     String epochS;
-    private List<String> data = new ArrayList<>();
+    private final List<String> data = new ArrayList<>();
 
     // for weather api
     private String cloth;
@@ -69,8 +67,8 @@ public class MainActivity extends AppCompatActivity {
                 InputStream stream = connection.getInputStream();
                 reader = new BufferedReader(new InputStreamReader(stream));
 
-                StringBuffer buffer = new StringBuffer();
-                String line = "";
+                StringBuilder buffer = new StringBuilder();
+                String line;
 
                 while ((line = reader.readLine()) != null)
                     buffer.append(line).append("\n");
@@ -102,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
             }
             JSONObject day = null;
             try {
+                assert info != null;
                 day = info.getJSONObject("forecast")
                         .getJSONArray("forecastday")
                         .getJSONObject(0)
@@ -111,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
             }
             double avgTemp = 0;
             try {
+                assert day != null;
                 avgTemp = day.getDouble("avgtemp_c");
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -123,12 +123,14 @@ public class MainActivity extends AppCompatActivity {
             }
             String weather = null;
             try {
+                assert condition != null;
                 weather = condition.getString("text");
             } catch (JSONException e) {
                 e.printStackTrace();
             }
             ClothingService clothes = new ClothingService();
             clothes.setClothes(avgTemp);
+            assert weather != null;
             clothes.addAccessories(weather);
             cloth = clothes.getClothes();
             time = clothes.getTime();
@@ -140,11 +142,11 @@ public class MainActivity extends AppCompatActivity {
 
         public void getTraceByJson(String url) throws JSONException {
             //zwraca czas, kiedy trzeba wyjsc z domu i trase
-            JSONObject info = null;
+            JSONObject info;
             info = new JSONObject(url);
-            String departure_time_value = "";
-            String departure_time_text = "";
-            String line_transport = "";
+            String departure_time_value;
+            String departure_time_text;
+            String line_transport;
             departure_time_value = info.getJSONArray("routes")
                     .getJSONObject(0)
                     .getJSONArray("legs")
@@ -179,9 +181,11 @@ public class MainActivity extends AppCompatActivity {
                         "/json?key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&mode=transit&origin=" + homeAddress
                         + "&destination=" + workAddress
                         + "&arrival_time=" + epochS);
-                //test
-                //URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Os.SobieskiegoPoznan&destination=Druzbickiego2,Poznan&key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&mode=transit&arrival_time=1640116800");
-                //URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Os.SobieskiegoPoznan&destination=Drużbickiego2,Poznań&key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&arrival_time=1639428974");
+                /*
+                test
+                URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Os.SobieskiegoPoznan&destination=Druzbickiego2,Poznan&key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&mode=transit&arrival_time=1640116800");
+                URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Os.SobieskiegoPoznan&destination=Drużbickiego2,Poznań&key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&arrival_time=1639428974");
+                */
 
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
@@ -191,8 +195,8 @@ public class MainActivity extends AppCompatActivity {
                 InputStream stream = connection.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 
-                StringBuffer buffer = new StringBuffer();
-                String line = "";
+                StringBuilder buffer = new StringBuilder();
+                String line;
 
                 while ((line = reader.readLine()) != null)
                     buffer.append(line).append("\n");
@@ -201,11 +205,7 @@ public class MainActivity extends AppCompatActivity {
                 getTraceByJson(trace_data);
 
 
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
+            } catch (IOException | JSONException e) {
                 e.printStackTrace();
             }
         }
@@ -250,9 +250,9 @@ public class MainActivity extends AppCompatActivity {
         adresP = (EditText) findViewById(R.id.adresP);
         godzina = (EditText) findViewById(R.id.godzina);
         editData = (EditText) findViewById(R.id.data);
-        txtShow = (TextView) findViewById(R.id.textTest);
-        button = (Button) findViewById(R.id.button);
-        button2 = (Button) findViewById(R.id.button2);
+//        txtShow = (TextView) findViewById(R.id.textTest);
+        Button button = (Button) findViewById(R.id.button);
+        Button button2 = (Button) findViewById(R.id.button2);
 
 
         //dla uruchomenia api tras -> new TraceData.start(), resultat w trace_json
@@ -279,6 +279,7 @@ public class MainActivity extends AppCompatActivity {
                     patternDate = dataOfWorkingStart + " " + hourOfWorkingStart + ":00";
                     datetimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     timeOfWorkingStart = datetimeFormat.parse(patternDate);
+                    assert timeOfWorkingStart != null;
                     epoch = (timeOfWorkingStart.getTime() / 1000);
                     epochS = Long.toString(epoch);
                     new TraceData().start();
@@ -292,12 +293,12 @@ public class MainActivity extends AppCompatActivity {
 
                     // Parsing time for create notification
                     timeFormat = new SimpleDateFormat("HH:mm");
-                    long millis = Long.parseLong(String.valueOf(Integer.valueOf(data.get(0))-(time*60+20*60)));
+                    long millis = Long.parseLong(String.valueOf(Integer.parseInt(data.get(0))-(time*60+20*60)));
                     timeOfAwaking = timeFormat.format(new Date(millis * 1000));
                     String hourWake = timeOfAwaking.substring(0, 2);
                     String minuteWake = timeOfAwaking.substring(3, 5);
                     createNotification("Wake Up","Tramwaj numer: " + data.get(2) + "/Godzina odjazdu:" + data.get(1)
-                            + "/Ubranie:" + cloth, Integer.valueOf(hourWake), Integer.valueOf(minuteWake));
+                            + "/Ubranie:" + cloth, Integer.parseInt(hourWake), Integer.parseInt(minuteWake));
 
                     Toast.makeText(MainActivity.this, "Powiadomienie nadejdzie o " + timeOfAwaking, Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
