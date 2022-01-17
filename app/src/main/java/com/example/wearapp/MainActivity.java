@@ -216,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void createNotification(String title, String message, int hour, int minute){
+    private void createNotification(String title, String message, Calendar calendar){
 
         //Alarm/notification data
         final int notificationId = 1;
@@ -236,11 +236,11 @@ public class MainActivity extends AppCompatActivity {
         AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
 
         // Create time.
-        Calendar startTime = Calendar.getInstance();
-        startTime.set(Calendar.HOUR_OF_DAY, hour);
-        startTime.set(Calendar.MINUTE, minute);
-        startTime.set(Calendar.SECOND, 0);
-        long alarmStartTime = startTime.getTimeInMillis();
+//        Calendar startTime = Calendar.getInstance();
+//        startTime.set(Calendar.HOUR_OF_DAY, hour);
+//        startTime.set(Calendar.MINUTE, minute);
+//        startTime.set(Calendar.SECOND, 0);
+        long alarmStartTime = calendar.getTimeInMillis();
 
         // Set Alarm
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmStartTime, pendingIntent);
@@ -253,7 +253,7 @@ public class MainActivity extends AppCompatActivity {
 
         adresM = (EditText) findViewById(R.id.adresM);
         adresP = (EditText) findViewById(R.id.adresP);
-        godzina = (EditText) findViewById(R.id.godzina);
+//        godzina = (EditText) findViewById(R.id.godzina);
         editDataTime = (EditText) findViewById(R.id.dataGodzina);
 //        txtShow = (TextView) findViewById(R.id.textTest);
         Button button = (Button) findViewById(R.id.button);
@@ -309,27 +309,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-//
-//        godzina.setOnClickListener(new View.OnClickListener() {
-//
-//            @Override
-//            public void onClick(View v) {
-//                // TODO Auto-generated method stub
-//                Calendar mcurrentTime = Calendar.getInstance();
-//                int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
-//                int minute = mcurrentTime.get(Calendar.MINUTE);
-//                TimePickerDialog mTimePicker;
-//                mTimePicker = new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
-//                    @Override
-//                    public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
-//                        godzina.setText( selectedHour + ":" + selectedMinute);
-//                    }
-//                }, hour, minute, true);//Yes 24 hour time
-//                mTimePicker.setTitle("Select Time");
-//                mTimePicker.show();
-//
-//            }
-//        });
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -346,13 +325,19 @@ public class MainActivity extends AppCompatActivity {
                     // Information from widgets
                     homeAddress = adresM.getText().toString();
                     workAddress = adresP.getText().toString();
-                    hourOfWorkingStart = godzina.getText().toString();
-                    dataOfWorkingStart = editDataTime.getText().toString();
+//                    hourOfWorkingStart = godzina.getText().toString();
+//                    dataOfWorkingStart = editDataTime.getText().toString();
 
                     // Parsing date for TraceData
-                    patternDate = dataOfWorkingStart + " " + hourOfWorkingStart + ":00";
-                    datetimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-                    timeOfWorkingStart = datetimeFormat.parse(patternDate);
+//                    patternDate = dataOfWorkingStart + " " + hourOfWorkingStart + ":00";
+//                    datetimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+//                    timeOfWorkingStart = datetimeFormat.parse(patternDate);
+                    SimpleDateFormat hoursFormat = new SimpleDateFormat("HH:mm");
+                    SimpleDateFormat dataFormat = new SimpleDateFormat("dd.MM.yyyy");
+                    timeOfWorkingStart = calendar.getTime();
+                    hourOfWorkingStart = hoursFormat.format(calendar.getTime());
+                    dataOfWorkingStart = dataFormat.format(calendar.getTime());
+
                     assert timeOfWorkingStart != null;
                     epoch = (timeOfWorkingStart.getTime() / 1000);
                     epochS = Long.toString(epoch);
@@ -366,15 +351,15 @@ public class MainActivity extends AppCompatActivity {
                     new WeatherAPI().execute(url);
 
                     // Parsing time for create notification
-                    timeFormat = new SimpleDateFormat("HH:mm");
-                    long millis = Long.parseLong(String.valueOf(Integer.parseInt(data.get(0))-(time*60+20*60)));
-                    timeOfAwaking = timeFormat.format(new Date(millis * 1000));
-                    String hourWake = timeOfAwaking.substring(0, 2);
-                    String minuteWake = timeOfAwaking.substring(3, 5);
+//                    timeFormat = new SimpleDateFormat("HH:mm");
+//                    long millis = Long.parseLong(String.valueOf(Integer.parseInt(data.get(0))-(time*60+20*60)));
+//                    timeOfAwaking = timeFormat.format(new Date(millis * 1000));
+//                    String hourWake = timeOfAwaking.substring(0, 2);
+//                    String minuteWake = timeOfAwaking.substring(3, 5);
                     createNotification("Wake Up","Tramwaj numer: " + data.get(2) + "/Godzina odjazdu:" + data.get(1)
-                            + "/Ubranie:" + cloth, Integer.parseInt(hourWake), Integer.parseInt(minuteWake));
+                            + "/Ubranie:" + cloth, calendar);
 
-                    Toast.makeText(MainActivity.this, "Powiadomienie nadejdzie o " + timeOfAwaking, Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Powiadomienie nadejdzie o " + hourOfWorkingStart, Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
