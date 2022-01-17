@@ -2,14 +2,19 @@ package com.example.wearapp;
 
 import ClothingService.ClothingService;
 import android.app.AlarmManager;
+import android.app.DatePickerDialog;
 import android.app.PendingIntent;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 //import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.Notifications.AlarmReceiver;
@@ -29,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText adresM;
     private EditText adresP;
     private EditText godzina;
-    private EditText editData;
+    private EditText editDataTime;
 //    private TextView txtShow;
 
     // for trace api
@@ -249,13 +254,82 @@ public class MainActivity extends AppCompatActivity {
         adresM = (EditText) findViewById(R.id.adresM);
         adresP = (EditText) findViewById(R.id.adresP);
         godzina = (EditText) findViewById(R.id.godzina);
-        editData = (EditText) findViewById(R.id.data);
+        editDataTime = (EditText) findViewById(R.id.dataGodzina);
 //        txtShow = (TextView) findViewById(R.id.textTest);
         Button button = (Button) findViewById(R.id.button);
         Button button2 = (Button) findViewById(R.id.button2);
 
-
+        final Calendar calendar=Calendar.getInstance();
         //dla uruchomenia api tras -> new TraceData.start(), resultat w trace_json
+        editDataTime.setInputType(InputType.TYPE_NULL);
+
+        editDataTime.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+//                Calendar mcurrentDate = Calendar.getInstance();
+//                int mYear = mcurrentDate.get(Calendar.YEAR);
+//                int mMonth = mcurrentDate.get(Calendar.MONTH);
+//                int mDay = mcurrentDate.get(Calendar.DAY_OF_MONTH);
+
+                try{
+//                    DatePickerDialog mDatePicker;
+//                    mDatePicker = new DatePickerDialog(MainActivity.this, new DatePickerDialog.OnDateSetListener() {
+                    DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener() {
+                        @Override
+                        public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
+                            calendar.set(Calendar.YEAR, selectedyear);
+                            calendar.set(Calendar.MONTH, selectedmonth);
+                            calendar.set(Calendar.DAY_OF_MONTH, selectedday);
+
+                            TimePickerDialog.OnTimeSetListener timeSetListener = new TimePickerDialog.OnTimeSetListener() {
+                                @Override
+                                public void onTimeSet(TimePicker timePicker, int hoursOfDay, int minute) {
+                                    calendar.set(Calendar.HOUR_OF_DAY, hoursOfDay);
+                                    calendar.set(Calendar.MINUTE, minute);
+
+                                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+                                    editDataTime.setText(simpleDateFormat.format((calendar.getTime())));
+                                }
+                            };
+                            new TimePickerDialog(MainActivity.this,
+                                    timeSetListener,
+                                    calendar.get(Calendar.HOUR_OF_DAY),
+                                    calendar.get(Calendar.MINUTE),
+                                    false).show();
+                        }
+                    };
+                    new DatePickerDialog(MainActivity.this,
+                            dateSetListener,
+                            calendar.get(Calendar.YEAR),
+                            calendar.get(Calendar.MONTH),
+                            calendar.get(Calendar.DAY_OF_MONTH)).show();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+//
+//        godzina.setOnClickListener(new View.OnClickListener() {
+//
+//            @Override
+//            public void onClick(View v) {
+//                // TODO Auto-generated method stub
+//                Calendar mcurrentTime = Calendar.getInstance();
+//                int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
+//                int minute = mcurrentTime.get(Calendar.MINUTE);
+//                TimePickerDialog mTimePicker;
+//                mTimePicker = new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
+//                    @Override
+//                    public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+//                        godzina.setText( selectedHour + ":" + selectedMinute);
+//                    }
+//                }, hour, minute, true);//Yes 24 hour time
+//                mTimePicker.setTitle("Select Time");
+//                mTimePicker.show();
+//
+//            }
+//        });
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -273,11 +347,11 @@ public class MainActivity extends AppCompatActivity {
                     homeAddress = adresM.getText().toString();
                     workAddress = adresP.getText().toString();
                     hourOfWorkingStart = godzina.getText().toString();
-                    dataOfWorkingStart = editData.getText().toString();
+                    dataOfWorkingStart = editDataTime.getText().toString();
 
                     // Parsing date for TraceData
                     patternDate = dataOfWorkingStart + " " + hourOfWorkingStart + ":00";
-                    datetimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    datetimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
                     timeOfWorkingStart = datetimeFormat.parse(patternDate);
                     assert timeOfWorkingStart != null;
                     epoch = (timeOfWorkingStart.getTime() / 1000);
