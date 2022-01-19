@@ -101,30 +101,11 @@
             android:textColorHint="@color/black"
             android:textSize="16sp"
             android:visibility="visible"
-            app:layout_constraintBottom_toTopOf="@+id/godzina"
+            app:layout_constraintBottom_toTopOf="@+id/adresPrz"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/imageView8"
             app:layout_constraintTop_toBottomOf="@+id/adresM" />
-
-        <EditText
-            android:id="@+id/godzina"
-            android:layout_width="250dp"
-            android:layout_height="50dp"
-            android:background="@drawable/border"
-            android:ems="10"
-            android:hint="Godzina"
-            android:importantForAutofill="no"
-            android:inputType="textPersonName"
-            android:textAlignment="center"
-            android:textColorHint="@color/black"
-            android:textSize="16sp"
-            android:visibility="gone"
-            app:layout_constraintBottom_toTopOf="@+id/dataGodzina"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/imageView7"
-            app:layout_constraintTop_toBottomOf="@+id/adresP" />
 
         <EditText
             android:id="@+id/dataGodzina"
@@ -139,11 +120,11 @@
             android:textColorHint="@color/black"
             android:textSize="16sp"
             android:visibility="visible"
-            app:layout_constraintBottom_toTopOf="@+id/adresPrz"
+            app:layout_constraintBottom_toTopOf="@+id/button"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/imageView2"
-            app:layout_constraintTop_toBottomOf="@+id/godzina" />
+            app:layout_constraintTop_toBottomOf="@+id/adresPrz" />
 
         <EditText
             android:id="@+id/adresPrz"
@@ -158,12 +139,11 @@
             android:textColorHint="@color/black"
             android:textSize="16sp"
             android:visibility="visible"
-            app:layout_constraintBottom_toTopOf="@+id/button2"
+            app:layout_constraintBottom_toTopOf="@+id/dataGodzina"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/imageView3"
-            app:layout_constraintTop_toBottomOf="@+id/dataGodzina"
-            app:layout_constraintVertical_bias="1.0" />
+            app:layout_constraintTop_toBottomOf="@+id/adresP" />
 
         <ImageView
             android:id="@+id/imageView6"
@@ -173,23 +153,10 @@
             android:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView8"
             app:layout_constraintEnd_toStartOf="@+id/adresM"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView3"
             app:srcCompat="@drawable/home"
-            tools:ignore="ImageContrastCheck" />
-
-        <ImageView
-            android:id="@+id/imageView7"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:contentDescription="@string/todo"
-            android:visibility="gone"
-            app:layout_constraintBottom_toTopOf="@+id/imageView2"
-            app:layout_constraintEnd_toStartOf="@+id/godzina"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageView8"
-            app:srcCompat="@drawable/clock"
             tools:ignore="ImageContrastCheck" />
 
         <ImageView
@@ -198,7 +165,7 @@
             android:layout_height="50dp"
             android:contentDescription="@string/todo"
             android:visibility="visible"
-            app:layout_constraintBottom_toTopOf="@+id/imageView7"
+            app:layout_constraintBottom_toTopOf="@+id/imageView3"
             app:layout_constraintEnd_toStartOf="@+id/adresP"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -211,11 +178,11 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:alpha="0.8"
-            app:layout_constraintBottom_toTopOf="@+id/imageView3"
+            app:layout_constraintBottom_toTopOf="@+id/button"
             app:layout_constraintEnd_toStartOf="@+id/dataGodzina"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageView7"
+            app:layout_constraintTop_toBottomOf="@+id/imageView3"
             app:srcCompat="@drawable/calendar" />
 
         <Button
@@ -269,11 +236,11 @@
             android:id="@+id/imageView3"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            app:layout_constraintBottom_toTopOf="@+id/button"
+            app:layout_constraintBottom_toTopOf="@+id/imageView2"
             app:layout_constraintEnd_toStartOf="@+id/adresPrz"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageView2"
+            app:layout_constraintTop_toBottomOf="@+id/imageView8"
             app:srcCompat="@drawable/home" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
