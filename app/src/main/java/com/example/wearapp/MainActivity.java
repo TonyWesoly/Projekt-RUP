@@ -8,7 +8,9 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -27,6 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -55,6 +58,11 @@ public class MainActivity extends AppCompatActivity {
     // for weather api
     private String cloth;
     private int time;
+
+    // for multithreading
+    private Handler mainHandler = new Handler();
+
+    Calendar calendar;
 
 
     class WeatherAPI extends AsyncTask<String, String, String> {
@@ -140,18 +148,19 @@ public class MainActivity extends AppCompatActivity {
             cloth = clothes.getClothes();
             time = clothes.getTime();
 //            txtShow.setText(cloth + time);
+            new TraceDataAsync().execute(calendar);
         }
     }
 
-    class TraceData extends Thread {
-
-        public void getTraceByJson(String url) throws JSONException {
+    class TraceDataAsync extends AsyncTask<Calendar, Integer, String>{
+        private static final String TAG = "Get data 0: ";
+        private String departure_time_value = "";
+        private String departure_time_text = "";
+        private String line_transport = "";
+        protected void getTraceByJson(String url) throws JSONException {
             //zwraca czas, kiedy trzeba wyjsc z domu i trase
             JSONObject info;
             info = new JSONObject(url);
-            String departure_time_value;
-            String departure_time_text;
-            String line_transport;
             departure_time_value = info.getJSONArray("routes")
                     .getJSONObject(0)
                     .getJSONArray("legs")
@@ -174,13 +183,21 @@ public class MainActivity extends AppCompatActivity {
                     .getJSONObject("line")
                     .getString("short_name");
 
-            data.add(departure_time_value);
-            data.add(departure_time_text);
-            data.add(line_transport);
+//            mainHandler.post(new Runnable() {
+//                @Override
+//                public void run() {
+//            data.clear();
+//            data.add(departure_time_value);
+//            data.add(departure_time_text);
+//            data.add(line_transport);
+//
+//                }
+//            });
         }
 
-        @Override
-        public void run() {
+        //        @Override
+        protected String run() {
+            String trace_data = "";
             try {
                 URL url = new URL("https://maps.googleapis.com/maps/api/directions" +
                         "/json?key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&mode=transit&origin=" + homeAddress
@@ -195,9 +212,10 @@ public class MainActivity extends AppCompatActivity {
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
                 connection.setRequestMethod("GET");
-                connection.connect();
+//                connection.connect();
 
                 InputStream stream = connection.getInputStream();
+                Log.d(TAG, "###################################");
                 BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 
                 StringBuilder buffer = new StringBuilder();
@@ -206,13 +224,37 @@ public class MainActivity extends AppCompatActivity {
                 while ((line = reader.readLine()) != null)
                     buffer.append(line).append("\n");
 
-                String trace_data = buffer.toString();
+                trace_data = buffer.toString();
                 getTraceByJson(trace_data);
 
 
             } catch (IOException | JSONException e) {
                 e.printStackTrace();
             }
+            //test return
+            return trace_data;
+        }
+        protected String doInBackground(Calendar... calendars) {
+            return run();
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+        }
+
+
+        protected void onPostExecute(String result) {
+
+            // Parsing time for create notification
+            timeFormat = new SimpleDateFormat("HH:mm");
+            long millis = Long.parseLong(String.valueOf(Integer.parseInt(departure_time_value)-(time*60+20*60)));
+            timeOfAwaking = timeFormat.format(new Date(millis * 1000));
+            Date awakingDate = new Date(millis * 1000);
+            Calendar awakingCalendar = Calendar.getInstance();
+            awakingDate.setTime(awakingDate.getTime());
+            createNotification("Wake Up","Tramwaj numer: " + line_transport + "/Godzina odjazdu:" +
+                    departure_time_text + "/Ubranie:" + cloth, awakingCalendar);
+
+            Toast.makeText(MainActivity.this, "Powiadomienie nadejdzie o " + hourOfWorkingStart, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -236,10 +278,6 @@ public class MainActivity extends AppCompatActivity {
         AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
 
         // Create time.
-//        Calendar startTime = Calendar.getInstance();
-//        startTime.set(Calendar.HOUR_OF_DAY, hour);
-//        startTime.set(Calendar.MINUTE, minute);
-//        startTime.set(Calendar.SECOND, 0);
         long alarmStartTime = calendar.getTimeInMillis();
 
         // Set Alarm
@@ -259,7 +297,7 @@ public class MainActivity extends AppCompatActivity {
         Button button = (Button) findViewById(R.id.button);
         Button button2 = (Button) findViewById(R.id.button2);
 
-        final Calendar calendar=Calendar.getInstance();
+        calendar=Calendar.getInstance();
         //dla uruchomenia api tras -> new TraceData.start(), resultat w trace_json
         editDataTime.setInputType(InputType.TYPE_NULL);
 
@@ -267,10 +305,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-//                Calendar mcurrentDate = Calendar.getInstance();
-//                int mYear = mcurrentDate.get(Calendar.YEAR);
-//                int mMonth = mcurrentDate.get(Calendar.MONTH);
-//                int mDay = mcurrentDate.get(Calendar.DAY_OF_MONTH);
 
                 try{
 //                    DatePickerDialog mDatePicker;
@@ -315,12 +349,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 try {
 
-//                    FileOutputStream fileOut = openFileOutput("test.json",MODE_PRIVATE);
-//                    fileOut.write(myTxt.getBytes(StandardCharsets.UTF_8));
-//                    fileOut.close();
-//                    adresM.setText("");
-//                    adresP.setText("");
-//                    godzina.setText("");
 
                     // Information from widgets
                     homeAddress = adresM.getText().toString();
@@ -329,9 +357,6 @@ public class MainActivity extends AppCompatActivity {
 //                    dataOfWorkingStart = editDataTime.getText().toString();
 
                     // Parsing date for TraceData
-//                    patternDate = dataOfWorkingStart + " " + hourOfWorkingStart + ":00";
-//                    datetimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-//                    timeOfWorkingStart = datetimeFormat.parse(patternDate);
                     SimpleDateFormat hoursFormat = new SimpleDateFormat("HH:mm");
                     SimpleDateFormat dataFormat = new SimpleDateFormat("dd.MM.yyyy");
                     timeOfWorkingStart = calendar.getTime();
@@ -340,26 +365,14 @@ public class MainActivity extends AppCompatActivity {
 
                     assert timeOfWorkingStart != null;
                     epoch = (timeOfWorkingStart.getTime() / 1000);
+                    epoch += 3600;
                     epochS = Long.toString(epoch);
-                    new TraceData().start();
-
-                    // Options for WeatherAPI
                     String city = "Poznan";
                     String key = "992e7cab06164165980213921210812";
                     String url = "https://api.weatherapi.com/v1/history.json?key=" + key +
                             "&q=" + city + "&dt=" + dataOfWorkingStart;
                     new WeatherAPI().execute(url);
 
-                    // Parsing time for create notification
-//                    timeFormat = new SimpleDateFormat("HH:mm");
-//                    long millis = Long.parseLong(String.valueOf(Integer.parseInt(data.get(0))-(time*60+20*60)));
-//                    timeOfAwaking = timeFormat.format(new Date(millis * 1000));
-//                    String hourWake = timeOfAwaking.substring(0, 2);
-//                    String minuteWake = timeOfAwaking.substring(3, 5);
-                    createNotification("Wake Up","Tramwaj numer: " + data.get(2) + "/Godzina odjazdu:" + data.get(1)
-                            + "/Ubranie:" + cloth, calendar);
-
-                    Toast.makeText(MainActivity.this, "Powiadomienie nadejdzie o " + hourOfWorkingStart, Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
