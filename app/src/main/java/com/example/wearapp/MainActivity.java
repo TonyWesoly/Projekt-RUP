@@ -251,8 +251,8 @@ public class MainActivity extends AppCompatActivity {
             Date awakingDate = new Date(millis * 1000);
             Calendar awakingCalendar = Calendar.getInstance();
             awakingDate.setTime(awakingDate.getTime());
-            createNotification("Wake Up","Tramwaj numer: " + line_transport + "/Godzina odjazdu:" +
-                    departure_time_text + "/Ubranie:" + cloth, awakingCalendar);
+            createNotification("Wstawaj!","|Tramwaj numer: " + line_transport + " |Godzina odjazdu: " +
+                    departure_time_text + cloth, awakingCalendar);
 
             Toast.makeText(MainActivity.this, "Powiadomienie nadejdzie o " + hourOfWorkingStart, Toast.LENGTH_LONG).show();
         }
