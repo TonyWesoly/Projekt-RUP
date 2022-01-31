@@ -1,11 +1,11 @@
 package com.example.wearapp;
 
-import ClothingService.ClothingService;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,27 +15,46 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-//import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import java.util.Iterator;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.Notifications.AlarmReceiver;
-import org.json.JSONException;
+import java.io.IOException;
+
+
+
 import org.json.JSONObject;
 
-import java.io.*;
+import org.json.JSONException;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-//import java.net.MalformedURLException;
 import java.net.URL;
+
 import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import ClothingService.ClothingService;
+
+
+//import android.widget.TextView;
+//import java.net.MalformedURLException;
 
 public class MainActivity extends AppCompatActivity {
 
     // widgets
     private EditText adresM;
     private EditText adresP;
+    private EditText adresPrz;
     private EditText godzina;
     private EditText editDataTime;
 //    private TextView txtShow;
@@ -43,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     // for trace api
     private String homeAddress;
     private String workAddress;
+    private String dzieckoAddress;
     private String hourOfWorkingStart;
     private String dataOfWorkingStart;
     private String patternDate;
@@ -52,17 +72,18 @@ public class MainActivity extends AppCompatActivity {
     private SimpleDateFormat timeFormat;
     private String timeOfAwaking;
     long epoch;
+    long epoch2;
+    String epoch2S;
     String epochS;
     private final List<String> data = new ArrayList<>();
 
     // for weather api
     private String cloth;
     private int time;
+    Calendar calendar;
 
-    // for multithreading
     private Handler mainHandler = new Handler();
 
-    Calendar calendar;
 
 
     class WeatherAPI extends AsyncTask<String, String, String> {
@@ -148,6 +169,7 @@ public class MainActivity extends AppCompatActivity {
             cloth = clothes.getClothes();
             time = clothes.getTime();
 //            txtShow.setText(cloth + time);
+
             new TraceDataAsync().execute(calendar);
         }
     }
@@ -157,10 +179,49 @@ public class MainActivity extends AppCompatActivity {
         private String departure_time_value = "";
         private String departure_time_text = "";
         private String line_transport = "";
-        protected void getTraceByJson(String url) throws JSONException {
+        private String line_transport1 = "";
+        private String linia = "";
+        private String departure_time_value1 = "";
+        private String departure_time_text1 = "";
+        private String czastxt = "";
+        private String czasvalue = "";
+
+        protected void getTraceByJson(String url, String url1) throws JSONException {
             //zwraca czas, kiedy trzeba wyjsc z domu i trase
             JSONObject info;
+            JSONObject info1;
+
             info = new JSONObject(url);
+            info1 = new JSONObject(url1);
+
+            line_transport1 = info1.getJSONArray("routes")
+                    .getJSONObject(0)
+                    .getJSONArray("legs")
+                    .getJSONObject(0)
+                    .getJSONArray("steps")
+                    .getJSONObject(1)
+                    .getJSONObject("transit_details")
+                    .getJSONObject("line")
+                    .getString("short_name");
+
+            departure_time_value1 = info1.getJSONArray("routes")
+                    .getJSONObject(0)
+                    .getJSONArray("legs")
+                    .getJSONObject(0)
+                    .getJSONObject("departure_time")
+                    .getString("value");
+            departure_time_text1 = info1.getJSONArray("routes")
+                    .getJSONObject(0)
+                    .getJSONArray("legs")
+                    .getJSONObject(0)
+                    .getJSONObject("departure_time")
+                    .getString("text");
+            info.put("tramwaj", line_transport1);
+            info.put("czasvalue", departure_time_value1);
+            info.put("czastxt", departure_time_text1);
+
+
+
             departure_time_value = info.getJSONArray("routes")
                     .getJSONObject(0)
                     .getJSONArray("legs")
@@ -183,49 +244,56 @@ public class MainActivity extends AppCompatActivity {
                     .getJSONObject("line")
                     .getString("short_name");
 
-//            mainHandler.post(new Runnable() {
-//                @Override
-//                public void run() {
-//            data.clear();
-//            data.add(departure_time_value);
-//            data.add(departure_time_text);
-//            data.add(line_transport);
-//
-//                }
-//            });
+            linia = info.getString("tramwaj");
+            czastxt = info.getString("czastxt");
+            czasvalue = info.getString("czasvalue");
         }
 
-        //        @Override
         protected String run() {
             String trace_data = "";
+            String trace_data1 = "";
+
             try {
                 URL url = new URL("https://maps.googleapis.com/maps/api/directions" +
                         "/json?key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&mode=transit&origin=" + homeAddress
+                        + "&destination=" + dzieckoAddress
+                        + "&arrival_time=" + epoch2S);
+                URL url1 = new URL("https://maps.googleapis.com/maps/api/directions" +
+                        "/json?key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&mode=transit&origin=" + dzieckoAddress
                         + "&destination=" + workAddress
                         + "&arrival_time=" + epochS);
-                /*
-                test
-                URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Os.SobieskiegoPoznan&destination=Druzbickiego2,Poznan&key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&mode=transit&arrival_time=1640116800");
-                URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Os.SobieskiegoPoznan&destination=Drużbickiego2,Poznań&key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&arrival_time=1639428974");
-                */
 
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                HttpURLConnection connection1 = (HttpURLConnection) url1.openConnection();
 
                 connection.setRequestMethod("GET");
-//                connection.connect();
+                connection1.setRequestMethod("GET");
 
                 InputStream stream = connection.getInputStream();
+                InputStream stream1 = connection1.getInputStream();
+
                 Log.d(TAG, "###################################");
+
                 BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+                BufferedReader reader1 = new BufferedReader(new InputStreamReader(stream1));
 
                 StringBuilder buffer = new StringBuilder();
+                StringBuilder buffer1 = new StringBuilder();
+
                 String line;
+                String line1;
+
 
                 while ((line = reader.readLine()) != null)
                     buffer.append(line).append("\n");
 
+                while ((line1 = reader1.readLine()) != null)
+                    buffer1.append(line1).append("\n");
+
                 trace_data = buffer.toString();
-                getTraceByJson(trace_data);
+                trace_data1 = buffer1.toString();
+
+                getTraceByJson(trace_data, trace_data1);
 
 
             } catch (IOException | JSONException e) {
@@ -251,8 +319,8 @@ public class MainActivity extends AppCompatActivity {
             Date awakingDate = new Date(millis * 1000);
             Calendar awakingCalendar = Calendar.getInstance();
             awakingDate.setTime(awakingDate.getTime());
-            createNotification("Wstawaj!","|Tramwaj numer: " + line_transport + " |Godzina odjazdu: " +
-                    departure_time_text + cloth, awakingCalendar);
+            createNotification("Wstawaj!","|Tramwaj numer: " + line_transport + " do przedszkola " + " |Godzina odjazdu: " +
+                    departure_time_text + " |Tramwaj z przedszkola do pracy numer : " + linia + " |Godzina odjazdu: " + czastxt + cloth, awakingCalendar);
 
             Toast.makeText(MainActivity.this, "Powiadomienie nadejdzie o " + hourOfWorkingStart, Toast.LENGTH_LONG).show();
         }
@@ -291,6 +359,7 @@ public class MainActivity extends AppCompatActivity {
 
         adresM = (EditText) findViewById(R.id.adresM);
         adresP = (EditText) findViewById(R.id.adresP);
+        adresPrz = (EditText) findViewById(R.id.adresPrz);
 //        godzina = (EditText) findViewById(R.id.godzina);
         editDataTime = (EditText) findViewById(R.id.dataGodzina);
 //        txtShow = (TextView) findViewById(R.id.textTest);
@@ -353,6 +422,7 @@ public class MainActivity extends AppCompatActivity {
                     // Information from widgets
                     homeAddress = adresM.getText().toString();
                     workAddress = adresP.getText().toString();
+                    dzieckoAddress = adresPrz.getText().toString();
 //                    hourOfWorkingStart = godzina.getText().toString();
 //                    dataOfWorkingStart = editDataTime.getText().toString();
 
@@ -365,8 +435,11 @@ public class MainActivity extends AppCompatActivity {
 
                     assert timeOfWorkingStart != null;
                     epoch = (timeOfWorkingStart.getTime() / 1000);
-                    epoch += 3600;
+                    epoch2 = (timeOfWorkingStart.getTime() / 1000);
+
+                    epoch2 -= 3600;
                     epochS = Long.toString(epoch);
+                    epoch2S = Long.toString(epoch2);
                     String city = "Poznan";
                     String key = "992e7cab06164165980213921210812";
                     String url = "https://api.weatherapi.com/v1/history.json?key=" + key +
